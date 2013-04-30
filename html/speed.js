@@ -57,7 +57,6 @@ function rundowntests(target_size, last_test, runupload) {
 
     runupload = runupload || false;
     if (test_down_results !== null && test_down_results.length > 0) {
-        console.log(test_down_results);
         var slowest, fastest, average = null;
         for (var i = 0; i < test_down_results.length; i++) {
             slowest = (slowest == null || test_down_results[i].MBps < slowest.MBps) ? test_down_results[i] : slowest;
@@ -76,7 +75,7 @@ function rundowntests(target_size, last_test, runupload) {
         var ttime = ((new Date()).getTime() - test_start.getTime());
         $("#current").html("");
         $("#result").append("<p>Finished download tests in " + ttime / 1000 + "s</p>");
-
+        console.log("test_down_results: ", test_down_results);
         test_start = null;
         test_down_results = [];
         test_fail = false;
@@ -91,6 +90,7 @@ function rundowntests(target_size, last_test, runupload) {
         test_start = new Date();
     }
 
+    // Run the tests
     $("#current").html("Running " + (target_size / 1024 / 1024).toFixed(2) + "MB download test <span id=\"currentper\"></span>");
     $("#current").append("<div style='border-left: 0px green; border-right: " + progressWidth + "px transparent; width:0px; height:15px;'></div>");
     var r = {}; //results
