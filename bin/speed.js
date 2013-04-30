@@ -7,6 +7,7 @@ var http = require('http');
 var url = require("url");
 var fs = require("fs");
 var _config = require("./config.json");
+var ua_parser = require('ua-parser');
 
 var opts = {
     "url": ["/", "/download", "/upload", "/jquery.js", "/speed.html", "/jquery.ajax-progress.js", "/ip", "/conf", "/speed.js"],
@@ -19,6 +20,10 @@ var file_types = {
     html: "text/html"
 };
 httpd = http.createServer(function(req, res) {
+    console.log(req.headers);
+    var ua = ua_parser.parse(req.headers['user-agent']).toString();
+    console.log("USER AGENT: ", ua);
+    console.log("ADDRESS: ", req.connection.remoteAddress);
     var datachunks = "";
     var uploadsize = 0;
     switch (opts.url.indexOf(url.parse(req.url.replace("//", "/")).pathname)) {
@@ -47,15 +52,17 @@ httpd = http.createServer(function(req, res) {
                     break;
                 }
 
+                // If valid, create buffer and fill with zeros
+                var b = new Buffer(max);
+                b.fill(0x0);
+
                 res.writeHead(200, {
                     'Content-length': max
                 });
-                var b = new Buffer(1024);
-                b.fill(0x0);
-                for (var i = 0; i < max; i += 1024) {
-                    res.write((max - i >= 1024) ? b : b.slice(0, max % 1024));
-                }
+                res.write(b);
                 res.end();
+                console.log()
+
                 break;
             case 2:
                 res.end();
