@@ -12,6 +12,7 @@ var test_up_results = [];
 var test_interval = null;
 var test_fail = false;
 var xreq;
+
 $(document).ready(function() {
     try {
         $.get("./ip", function(res) {
@@ -19,7 +20,8 @@ $(document).ready(function() {
         });
 
         $.get("./conf", null, function(conf) {
-            var setExpanded = function(obj){
+            var setExpanded = function(ob){
+                console.log("setExpanded: ", ob);
                 $(ob.target).val(expandshortcodes($(ob.target).val()));
             };
             for (var prop in conf) {
@@ -27,7 +29,7 @@ $(document).ready(function() {
                 var ni = $(document.createElement('input')).attr('type', 'text').attr('id', prop).attr('value', conf[prop]);
                 var li = $(document.createElement('label')).text(prop).attr("for", prop);
 
-                ni.blur(setExpanded(ob)); // display expanded short code for each
+                ni.blur(setExpanded); // display expanded short code for each
 
                 pi.append(li);
                 pi.append(ni);
@@ -37,7 +39,7 @@ $(document).ready(function() {
         $("#jswarning").toggle();
         $("#mainbod").toggle();
     } catch (e) {
-
+        console.log(e.toString());
     }
 });
 
@@ -55,10 +57,11 @@ function rundowntests(target_size, last_test, runupload) {
 
     runupload = runupload || false;
     if (test_down_results !== null && test_down_results.length > 0) {
+        console.log(test_down_results);
         var slowest, fastest, average = null;
         for (var i = 0; i < test_down_results.length; i++) {
-            slowest = (slowest === null || test_down_results[i].MBps < slowest.MBps) ? test_down_results[i] : slowest;
-            fastest = (fastest === null || test_down_results[i].MBps > fastest.MBps) ? test_down_results[i] : fastest;
+            slowest = (slowest == null || test_down_results[i].MBps < slowest.MBps) ? test_down_results[i] : slowest;
+            fastest = (fastest == null || test_down_results[i].MBps > fastest.MBps) ? test_down_results[i] : fastest;
             average += test_down_results[i].MBps;
         }
         $("#stat_download_slowest span").text((slowest.MBps * 8).toFixed(2) + "Mbps (" + (slowest.TargetSize / 1024 / 1024).toFixed(2) + "MB)");
@@ -67,7 +70,7 @@ function rundowntests(target_size, last_test, runupload) {
         $("#uploadStartSize").val(Math.round((fastest.TargetSize / 8 > $("#maxUploadSize").val()) ? $("#maxUploadSize").val() : fastest.TargetSize / 8));
     }
 
-    if (test_fail === true || target_size > $("#maxDownloadSize").val() || (last_test !== null && last_test.Diff > $("#maxDownloadTime").val() * 1000)) {
+    if (test_fail == true || target_size > $("#maxDownloadSize").val() || (last_test !== null && last_test.Diff > $("#maxDownloadTime").val() * 1000)) {
 
         //end of all things;
         var ttime = ((new Date()).getTime() - test_start.getTime());
@@ -84,7 +87,7 @@ function rundowntests(target_size, last_test, runupload) {
     }
 
 
-    if (test_start === null) {
+    if (test_start == null) {
         test_start = new Date();
     }
 
@@ -128,11 +131,11 @@ var createdataInterval = null;
 function runuptests(target_size, last_test) {
     //var d = [];
 
-    if (test_start === null) {
+    if (test_start == null) {
         test_start = new Date();
     }
 
-    if (test_fail === true || test_up_results.length >= parseInt($("#maxUploadInterations").val(), 10) || target_size > parseInt($("#maxUploadSize").val(), 10) || (last_test !== null && last_test.Diff !== null && last_test.Diff > parseInt($("#maxUploadTime").val(), 10) * 1000)) {
+    if (test_fail == true || test_up_results.length >= parseInt($("#maxUploadInterations").val(), 10) || target_size > parseInt($("#maxUploadSize").val(), 10) || (last_test !== null && last_test.Diff !== null && last_test.Diff > parseInt($("#maxUploadTime").val(), 10) * 1000)) {
         var ttime = ((new Date()).getTime() - test_start.getTime());
         $("#current").html("");
         $("#result").append("<p>Finished upload tests in " + ttime / 1000 + "s</p>");
@@ -145,8 +148,8 @@ function runuptests(target_size, last_test) {
         var slowest, fastest, average = null;
 
         for (var i = 0; i < test_up_results.length; i++) {
-            slowest = (slowest === null || test_up_results[i].MBps < slowest.MBps) ? test_up_results[i] : slowest;
-            fastest = (fastest === null || test_up_results[i].MBps > fastest.MBps) ? test_up_results[i] : fastest;
+            slowest = (slowest == null || test_up_results[i].MBps < slowest.MBps) ? test_up_results[i] : slowest;
+            fastest = (fastest == null || test_up_results[i].MBps > fastest.MBps) ? test_up_results[i] : fastest;
             average += test_up_results[i].MBps;
         }
 
@@ -162,7 +165,7 @@ function runuptests(target_size, last_test) {
     while(upload_data.length < target_size){
         upload_data.push(0);
     }
-    if (createdataInterval === null) {
+    if (createdataInterval == null) {
         createdataInterval = setInterval(function() {
             if (upload_data.length >= target_size) {
                 clearInterval(createdataInterval);
@@ -214,7 +217,7 @@ function expandshortcodes(str) {
     //replace M K, etc with appropriate bytes
     //mega
     var res = 0;
-    var meg = "";
+    var meg;
     try {
         meg = str.match(/([0-9\.]+)m/i);
         res += parseFloat(meg[1]) * 1024 * 1024;
