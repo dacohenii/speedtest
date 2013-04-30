@@ -165,6 +165,8 @@ function runuptests(target_size, last_test) {
     while(upload_data.length < target_size){
         upload_data.push(0);
     }
+
+    var upload_data_string = upload_data.join("");
     if (createdataInterval == null) {
         createdataInterval = setInterval(function() {
             if (upload_data.length >= target_size) {
@@ -188,7 +190,7 @@ function runuptests(target_size, last_test) {
                         $("#current div:first").css('border-left', Math.ceil((e.loaded / e.total) * 100 * (progressWidth / 100)).toString() + "px solid green");
                         $("#current div:first").css('border-right', (progressWidth - Math.ceil((e.loaded / e.total) * 100 * (progressWidth / 100))).toString() + "px solid red");
                     },
-                    data: upload_data.join("")
+                    data: upload_data_string
                 }).error(function() {
                     test_fail = true;
                 }).done(function() {

@@ -20,7 +20,7 @@ var file_types = {
     html: "text/html"
 };
 httpd = http.createServer(function(req, res) {
-    console.log(req.headers);
+    // console.log(req.headers);
     var ua = ua_parser.parse(req.headers['user-agent']).toString();
     console.log("USER AGENT: ", ua);
     console.log("ADDRESS: ", req.connection.remoteAddress);
@@ -55,14 +55,10 @@ httpd = http.createServer(function(req, res) {
                 // If valid, create buffer and fill with zeros
                 var b = new Buffer(max);
                 b.fill(0x0);
-
                 res.writeHead(200, {
                     'Content-length': max
                 });
-                res.write(b);
-                res.end();
-                console.log()
-
+                res.end(b); // fill the response with the buffer
                 break;
             case 2:
                 res.end();
