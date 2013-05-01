@@ -10,7 +10,7 @@ var _config = require("./config.json");
 var ua_parser = require('ua-parser');
 
 var opts = {
-    "url": ["/", "/download", "/upload", "/jquery.js", "/speed.html", "/jquery.ajax-progress.js", "/ip", "/conf", "/speed.js"],
+    "url": ["/", "/download", "/upload", "/jquery.js", "/speed.html", "/jquery.ajax-progress.js", "/ip", "/conf", "/speed.js", "/dl_results", "/ul_results"],
     "limits": _config.limits,
     "port": _config.port || 8080,
     "ip": _config.ip || "0.0.0.0"
@@ -21,10 +21,13 @@ var file_types = {
 };
 httpd = http.createServer(function(req, res) {
     // console.log(req.headers);
-    var ua = ua_parser.parse(req.headers['user-agent']).toString();
-    console.log("USER AGENT: ", ua);
-    console.log("ADDRESS: ", req.connection.remoteAddress);
-    var datachunks = "";
+    var r = ua_parser.parse(req.headers['user-agent']);
+    console.log("USER AGENT:\t", r.ua.toString());
+    console.log("OS:\t\t", r.os.toString());
+    console.log("DEVICE:\t\t", r.device.family);
+    console.log("ADDRESS:\t", req.connection.remoteAddress);
+    var dl_chunks = "";
+    var ul_chunks = "";
     var uploadsize = 0;
     switch (opts.url.indexOf(url.parse(req.url.replace("//", "/")).pathname)) {
         case 2:
@@ -36,6 +39,16 @@ httpd = http.createServer(function(req, res) {
                     //Kill it! Kill it with fire!
                     req.connection.destroy();
                 }
+            });
+            break;
+        case 9:
+            req.on("data", function(d){
+                dl_chunks += d;
+            });
+            break;
+        case 10:
+            req.on("data",function(d){
+                ul_chunks += d;
             });
             break;
     }
@@ -61,6 +74,16 @@ httpd = http.createServer(function(req, res) {
                 res.end(b); // fill the response with the buffer
                 break;
             case 2:
+                res.end();
+                break;
+            case 9:
+                console.log("download_results: " + dl_chunks);
+                res.writeHead(200);
+                res.end();
+                break;
+            case 10:
+                console.log("upload_results: " + ul_chunks);
+                res.writeHead(200);
                 res.end();
                 break;
             case 0:
@@ -114,6 +137,7 @@ httpd = http.createServer(function(req, res) {
                 });
                 res.end(JSON.stringify(opts.limits));
                 break;
+
             default:
                 res.writeHead(400);
                 res.write("fail");

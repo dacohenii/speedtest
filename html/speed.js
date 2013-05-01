@@ -76,6 +76,24 @@ function rundowntests(target_size, last_test, runupload) {
         $("#current").html("");
         $("#result").append("<p>Finished download tests in " + ttime / 1000 + "s</p>");
         console.log("test_down_results: ", test_down_results);
+
+        $.ajax({
+          url: './dl_results',
+          type: 'POST',
+          //dataType: 'text/json',
+          data: JSON.stringify(test_down_results),
+          complete: function(xhr, textStatus) {
+            console.log("down-send-complete");//called when complete
+          },
+          success: function(data, textStatus, xhr) {
+            console.log("down-send-success: ");//called when successful
+          },
+          error: function(xhr, textStatus, errorThrown) {
+            console.error("Failure sending results: " + errorThrown.toString());//called when there is an error
+          }
+        });
+
+
         test_start = null;
         test_down_results = [];
         test_fail = false;
@@ -139,6 +157,23 @@ function runuptests(target_size, last_test) {
         var ttime = ((new Date()).getTime() - test_start.getTime());
         $("#current").html("");
         $("#result").append("<p>Finished upload tests in " + ttime / 1000 + "s</p>");
+
+        $.ajax({
+          url: './ul_results',
+          type: 'POST',
+          //dataType: 'text/json',
+          data: JSON.stringify(test_up_results),
+          complete: function(xhr, textStatus) {
+            console.log("up-send-complete");//called when complete
+          },
+          success: function(data, textStatus, xhr) {
+            console.log("up-send-success");//called when successful
+          },
+          error: function(xhr, textStatus, errorThrown) {
+            console.error("Failure sending upload results: " + errorThrown.toString());//called when there is an error
+          }
+        });
+
         test_up_results = [];
         test_fail = false;
         return;
