@@ -136,7 +136,7 @@ function rundowntests(target_size, last_test, runupload) {
         r.TargetSize = target_size;
         test_down_results.push(r);
 
-        $('#result').append("<p>" + (target_size / 1024 / 1024).toFixed(2) + "MB in " + r.Diff + "s @ " + (r.MBps * 8).toFixed(2) + "Mbps (" + r.MBps.toFixed(2) + "MBps)</p>");
+        $('#result').append("<p>" + (target_size / 1024 / 1024).toFixed(2) + "MB in " + r.Diff + "ms @ " + (r.MBps * 8).toFixed(2) + "Mbps (" + r.MBps.toFixed(2) + "MBps)</p>");
         rundowntests(Math.ceil(target_size * $('#downloadSizeModifier').val()), r, runupload);
     }).always(function() {
         clearInterval(test_interval);
@@ -237,7 +237,7 @@ function runuptests(target_size, last_test) {
                     r.MBps = MBps;
                     r.TargetSize = target_size;
                     test_up_results.push(r);
-                    $('#result').append("<p>" + (target_size / 1024 / 1024).toFixed(2) + "MB in " + (r.Diff).toFixed(2) + "s @ " + (MBps * 8).toFixed(2) + "Mbps (" + MBps.toString().substring(0, 5) + "MBps)</p>");
+                    $('#result').append("<p>" + (target_size / 1024 / 1024).toFixed(2) + "MB in " + (r.Diff).toFixed(2) + "ms @ " + (MBps * 8).toFixed(2) + "Mbps (" + MBps.toString().substring(0, 5) + "MBps)</p>");
                 }).always(function() {
                     runuptests(Math.round(target_size * $("#uploadSizeModifier").val()), r);
                 });
