@@ -61,8 +61,7 @@ $(document).ready(function() {
           pointSize: 0,
           dateFormat: function(d){return((d - test_start.getTime()).toString() + " ms");},
           yLabelFormat: function(y){return((y*8).toString() + " Mbps (" + y + " MBps)");},
-          continuousLine: true,
-          smooth: false
+          continuousLine: true
         });
 });
 
