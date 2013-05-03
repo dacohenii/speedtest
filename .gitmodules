@@ -1,0 +1,3 @@
+[submodule "html/morris"]
+	path = html/morris
+	url = https://github.com/oesmith/morris.js.git

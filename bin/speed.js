@@ -10,7 +10,7 @@ var _config = require("./config.json");
 var ua_parser = require('ua-parser');
 
 var opts = {
-    "url": ["/", "/download", "/upload", "/jquery.js", "/speed.html", "/jquery.ajax-progress.js", "/ip", "/conf", "/speed.js", "/dl_results", "/ul_results"],
+    "url": ["/", "/download", "/upload", "/jquery.js", "/speed.html", "/jquery.ajax-progress.js", "/ip", "/conf", "/speed.js", "/dl_results", "/ul_results", "/morris/morris.css", "/morris/morris.min.js", "/raphael-min.js"],
     "limits": _config.limits,
     "port": _config.port || 8080,
     "ip": _config.ip || "0.0.0.0"
@@ -56,6 +56,8 @@ httpd = http.createServer(function(req, res) {
     //http://thecodinghumanist.com/blog/archives/2011/5/6/serving-static-files-from-node-js
     req.on('end', function() {
         switch (opts.url.indexOf(url.parse(req.url.replace("//", "/")).pathname)) {
+            // switch/case to determine which way to respond to different requests.
+            // each case is the index of opts.url, which defines valid URLs 
             case 1:
                 //download
                 var max = parseInt(url.parse(req.url, true).query.size, 10);
@@ -86,10 +88,13 @@ httpd = http.createServer(function(req, res) {
                 res.writeHead(200);
                 res.end();
                 break;
-            case 0:
-            case 3:
-            case 4:
+            case 0:    // For all these cases, basically the files just need to be served.
+            case 3:    // (presumably for security reasons).
+            case 4:    // (reminder: cases fall through if there's no break statement)
             case 5:
+            case 11:
+            case 12:
+            case 13:
             case 8:
                 var tfile = url.parse(req.url).pathname;
 

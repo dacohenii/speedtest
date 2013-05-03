@@ -1,7 +1,10 @@
 <html>
 <head>
+<link rel="stylesheet" href="morris/morris.css" />
 <script type="application/javascript" src="./jquery.js" ></script>
 <script type="application/javascript" src="./jquery.ajax-progress.js" ></script>
+<script src="./raphael-min.js"></script>
+<script type="application/javascript" src="morris/morris.min.js"></script>
 <script type="application/javascript" src="./speed.js"></script>
 <title>NodeJS HTTP Speedtest: All for WAN and WAN for all</title>
 </head>
@@ -16,6 +19,7 @@
         <button onclick="clearresults()">Clear results</button>
         <button onclick="togglesettings()">Setting</button>
         <div id="current" ></div>
+        <div id="graph" style="min-height: 250px"></div>
         <div style="margin:0px auto;">
             <div id="result" style="float:left; width: 500px; min-height: 400px; border-right: 1px solid black;"><p></p></div>
             <div id="stats" style="padding: 0px 10px; float:left; text-align:left;border-right: 1px solid black;">

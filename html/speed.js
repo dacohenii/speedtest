@@ -5,13 +5,20 @@
 
 var progressWidth = 500;
 var lock = false;
-var test_start = null;
+
+var test_has_started = false;
+var test_start = new Date();
 var test_down_results = [];
 var test_up_results = [];
 
 var test_interval = null;
 var test_fail = false;
 var xreq;
+
+/** Graph setup **/
+var graphData = [];   // contains dictionaries for the graph 
+var graph_start_time; // start time for graph in form of Date().getTime()...we set this to 0 ms.
+var graph; // the graph object
 
 $(document).ready(function() {
     try {
@@ -38,9 +45,23 @@ $(document).ready(function() {
         }, 'json');
         $("#jswarning").toggle();
         $("#mainbod").toggle();
+
+
     } catch (e) {
         console.log(e.toString());
     }
+
+    // graph stuff
+    graph = Morris.Area({
+          element: 'graph',
+          data: graphData,
+          xkey: 'time',
+          ykeys: ['speed'],
+          labels: ['Download Speed'],
+          dateFormat: function(d){return((d - test_start.getTime()).toString() + " ms");},
+          yLabelFormat: function(y){return((y*8).toString() + " Mbps (" + y + " MBps)");},
+          continuousLine: true
+        });
 });
 
 function clearresults() {
@@ -54,9 +75,9 @@ function stoptests() {
 }
 
 function rundowntests(target_size, last_test, runupload) {
-
     runupload = runupload || false;
     if (test_down_results !== null && test_down_results.length > 0) {
+        // download first file
         var slowest, fastest, average = null;
         for (var i = 0; i < test_down_results.length; i++) {
             slowest = (slowest == null || test_down_results[i].MBps < slowest.MBps) ? test_down_results[i] : slowest;
@@ -104,8 +125,9 @@ function rundowntests(target_size, last_test, runupload) {
     }
 
 
-    if (test_start == null) {
+    if (test_has_started == false) {
         test_start = new Date();
+        test_has_started = true;
     }
 
     // Run the tests
@@ -113,11 +135,24 @@ function rundowntests(target_size, last_test, runupload) {
     $("#current").append("<div style='border-left: 0px green; border-right: " + progressWidth + "px transparent; width:0px; height:15px;'></div>");
     var r = {}; //results
     var start = new Date();
+    r.progress = [{time: start.getTime(), speed: 0}]; // store progress during downloads
+    // r.progress is an array to measure speed within downloads.
+    // each element is a dictionary with time and number of bytes loaded
+    var prev_loaded = 0;
+    var prev_time = start.getTime();
     xreq = $.ajax('./download?size=' + target_size, {
         progress: function(e) {
-            var curspeed = (e.loaded / (((new Date()).getTime() - start.getTime()))) / 1000;
+            var now = new Date().getTime();
+            //var curspeed = (e.loaded / (now - start.getTime())) / 1000; // MBps <-- avg for file, not instantaneous speed
+            var curspeed = ((e.loaded - prev_loaded) / (now - prev_time)) / 1000; // MBps <-- "instantaneous" speed
+            r.progress.push({ // add current speed 
+                time: now,
+                speed: curspeed
+            });
             r.ActualSize = e.total;
             r.Loaded = e.loaded;
+            prev_loaded = e.loaded; // set these for next iteration 
+            prev_time = now;
             $("#currentper").html(Math.ceil((e.loaded / e.total) * 100).toString() + "% @ " + Math.round(curspeed * 8 * 100) / 100 + "Mbps (" + Math.round(e.loaded / 1024) + "/" + e.total / 1024 + "KB)");
             $("#current div:first").css('border-left', Math.ceil((e.loaded / e.total) * 100 * (progressWidth / 100)).toString() + "px solid green");
             $("#current div:first").css('border-right', (progressWidth - Math.ceil((e.loaded / e.total) * 100 * (progressWidth / 100))).toString() + "px solid red");
@@ -125,7 +160,7 @@ function rundowntests(target_size, last_test, runupload) {
     }).error(function(e) {
         console.log(e);
         test_fail = true;
-    }).done(function() {
+    }).done(function() {    // Called at end of current speed test
         var end = new Date();
 
         r.Start = start;
@@ -134,6 +169,11 @@ function rundowntests(target_size, last_test, runupload) {
         var MBps = ((target_size) / (r.Diff / 1000));
         r.MBps = MBps / 1024 / 1024;
         r.TargetSize = target_size;
+
+        r.progress.push({time: prev_time, speed: undefined})
+        graphData = graphData.concat(r.progress);
+        graph.setData(graphData);
+
         test_down_results.push(r);
 
         $('#result').append("<p>" + (target_size / 1024 / 1024).toFixed(2) + "MB in " + r.Diff + "ms @ " + (r.MBps * 8).toFixed(2) + "Mbps (" + r.MBps.toFixed(2) + "MBps)</p>");
