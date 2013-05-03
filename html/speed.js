@@ -56,12 +56,13 @@ $(document).ready(function() {
           element: 'graph',
           data: graphData,
           xkey: 'time',
-          ykeys: ['speed'],
-          labels: ['Download Speed'],
+          ykeys: ['speed', 'fileavg'],
+          labels: ['Download Speed', 'File Average Speed'],
           pointSize: 0,
           dateFormat: function(d){return((d - test_start.getTime()).toString() + " ms");},
           yLabelFormat: function(y){return((y*8).toString() + " Mbps (" + y + " MBps)");},
-          continuousLine: true
+          continuousLine: true,
+          smooth: false
         });
 });
 
@@ -144,11 +145,12 @@ function rundowntests(target_size, last_test, runupload) {
     xreq = $.ajax('./download?size=' + target_size, {
         progress: function(e) {
             var now = new Date().getTime();
-            //var curspeed = (e.loaded / (now - start.getTime())) / 1000; // MBps <-- avg for file, not instantaneous speed
+            var cur_avg = (e.loaded / (now - start.getTime())) / 1000; // MBps <-- avg for file, not instantaneous speed
             var curspeed = ((e.loaded - prev_loaded) / (now - prev_time)) / 1000; // MBps <-- "instantaneous" speed
             r.progress.push({ // add current speed 
                 time: now,
-                speed: curspeed
+                speed: curspeed,
+                fileavg: cur_avg
             });
             r.ActualSize = e.total;
             r.Loaded = e.loaded;
