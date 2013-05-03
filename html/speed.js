@@ -58,6 +58,7 @@ $(document).ready(function() {
           xkey: 'time',
           ykeys: ['speed'],
           labels: ['Download Speed'],
+          pointSize: 0,
           dateFormat: function(d){return((d - test_start.getTime()).toString() + " ms");},
           yLabelFormat: function(y){return((y*8).toString() + " Mbps (" + y + " MBps)");},
           continuousLine: true
