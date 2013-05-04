@@ -9,6 +9,12 @@ var test_start = null;
 var test_down_results = [];
 var test_up_results = [];
 
+var result = {
+    "locationAccuracy" : null,
+    "latitude": null,
+    "longitude": null
+}; // results to send back
+
 var test_interval = null;
 var test_fail = false;
 var xreq;
@@ -50,12 +56,30 @@ $(document).ready(function() {
 
     navigator.geolocation.getCurrentPosition(
         function(pos){
-            console.log("POSITION! ", pos);
+            result.locationAccuracy = pos.coords.accuracy;
+            result.latitude = pos.coords.latitude;
+            result.longitude = pos.coords.longitude;
         },
         function(error){
-            console.error("Something went wrong with getting position...", error);
+            console.error(error);
         });
 });
+
+function sendResults(){
+       $.ajax({
+      url: './results',
+      type: 'POST',
+      //dataType: 'text/json',
+      data: JSON.stringify(result),
+      complete: function(xhr, textStatus) {
+      },
+      success: function(data, textStatus, xhr) {
+      },
+      error: function(xhr, textStatus, errorThrown) {
+        console.error("Failure sending upload results: ", errorThrown);
+      }
+    });
+}
 
 function clearresults() {
     $("#result").html("");
@@ -70,12 +94,18 @@ function stoptests() {
 function rundowntests(target_size, last_test, runupload) {
 
     runupload = runupload || false;
+
+    if (test_start == null) {
+        test_start = new Date();
+    }
+
     if (test_down_results !== null && test_down_results.length > 0) {
-        var slowest, fastest, average = null;
+    var slowest, fastest, average = null;
         for (var i = 0; i < test_down_results.length; i++) {
             slowest = (slowest == null || test_down_results[i].MBps < slowest.MBps) ? test_down_results[i] : slowest;
             fastest = (fastest == null || test_down_results[i].MBps > fastest.MBps) ? test_down_results[i] : fastest;
             average += test_down_results[i].MBps;
+            result.downloadSpeed = fastest.MBps;
         }
         $("#stat_download_slowest span").text((slowest.MBps * 8).toFixed(2) + "Mbps (" + (slowest.TargetSize / 1024 / 1024).toFixed(2) + "MB)");
         $("#stat_download_fastest span").text((fastest.MBps * 8).toFixed(2) + "Mbps (" + (fastest.TargetSize / 1024 / 1024).toFixed(2) + "MB)");
@@ -89,23 +119,6 @@ function rundowntests(target_size, last_test, runupload) {
         var ttime = ((new Date()).getTime() - test_start.getTime());
         $("#current").html("");
         $("#result").append("<p>Finished download tests in " + ttime / 1000 + "s</p>");
-        console.log("test_down_results: ", test_down_results);
-
-        $.ajax({
-          url: './dl_results',
-          type: 'POST',
-          //dataType: 'text/json',
-          data: JSON.stringify(test_down_results),
-          complete: function(xhr, textStatus) {
-            console.log("down-send-complete");//called when complete
-          },
-          success: function(data, textStatus, xhr) {
-            console.log("down-send-success: ");//called when successful
-          },
-          error: function(xhr, textStatus, errorThrown) {
-            console.error("Failure sending results: " + errorThrown.toString());//called when there is an error
-          }
-        });
 
 
         test_start = null;
@@ -114,13 +127,15 @@ function rundowntests(target_size, last_test, runupload) {
         if (runupload) {
             runuptests($('#uploadStartSize').val(), null);
         }
+        else{
+            result.uploadSpeed = null;
+            sendResults();
+        }
         return;
     }
 
 
-    if (test_start == null) {
-        test_start = new Date();
-    }
+
 
     // Run the tests
     $("#current").html("Running " + (target_size / 1024 / 1024).toFixed(2) + "MB download test <span id=\"currentper\"></span>");
@@ -172,21 +187,8 @@ function runuptests(target_size, last_test) {
         $("#current").html("");
         $("#result").append("<p>Finished upload tests in " + ttime / 1000 + "s</p>");
 
-        $.ajax({
-          url: './ul_results',
-          type: 'POST',
-          //dataType: 'text/json',
-          data: JSON.stringify(test_up_results),
-          complete: function(xhr, textStatus) {
-            console.log("up-send-complete");//called when complete
-          },
-          success: function(data, textStatus, xhr) {
-            console.log("up-send-success");//called when successful
-          },
-          error: function(xhr, textStatus, errorThrown) {
-            console.error("Failure sending upload results: " + errorThrown.toString());//called when there is an error
-          }
-        });
+       /** send results back to server **/ 
+       sendResults();
 
         test_up_results = [];
         test_fail = false;
@@ -201,6 +203,7 @@ function runuptests(target_size, last_test) {
             fastest = (fastest == null || test_up_results[i].MBps > fastest.MBps) ? test_up_results[i] : fastest;
             average += test_up_results[i].MBps;
         }
+        result.uploadSpeed = fastest.MBps;
 
         $("#stat_upload_slowest span").text(Math.round(slowest.MBps * 8 * 100) / 100 + "Mbps (" + slowest.TargetSize / 1024 / 1024 + "MB)");
         $("#stat_upload_fastest span").text(Math.round(fastest.MBps * 8 * 100) / 100 + "Mbps (" + fastest.TargetSize / 1024 / 1024 + "MB)");
