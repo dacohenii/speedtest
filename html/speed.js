@@ -13,6 +13,12 @@ var test_interval = null;
 var test_fail = false;
 var xreq;
 
+Modernizr.load({
+    test: Modernizr.geolocation,
+    nope: 'geo.js'
+});
+
+
 $(document).ready(function() {
     try {
         $.get("./ip", function(res) {
@@ -41,6 +47,14 @@ $(document).ready(function() {
     } catch (e) {
         console.log(e.toString());
     }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos){
+            console.log("POSITION! ", pos);
+        },
+        function(error){
+            console.error("Something went wrong with getting position...", error);
+        });
 });
 
 function clearresults() {

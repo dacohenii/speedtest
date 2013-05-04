@@ -10,7 +10,7 @@ var _config = require("./config.json");
 var ua_parser = require('ua-parser');
 
 var opts = {
-    "url": ["/", "/download", "/upload", "/jquery.js", "/speed.html", "/jquery.ajax-progress.js", "/ip", "/conf", "/speed.js", "/dl_results", "/ul_results"],
+    "url": ["/", "/download", "/upload", "/jquery.js", "/speed.html", "/jquery.ajax-progress.js", "/ip", "/conf", "/speed.js", "/dl_results", "/ul_results", "/modernizr.custom.72111.js", "/geo.js"],
     "limits": _config.limits,
     "port": _config.port || 8080,
     "ip": _config.ip || "0.0.0.0"
@@ -90,6 +90,8 @@ httpd = http.createServer(function(req, res) {
             case 3:
             case 4:
             case 5:
+            case 11:
+            case 12:
             case 8:
                 var tfile = url.parse(req.url).pathname;
 
