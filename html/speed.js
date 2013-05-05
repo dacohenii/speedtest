@@ -10,7 +10,8 @@ var test_down_results = [];
 var test_up_results = [];
 
 var result = {
-    "locationAccuracy" : null,
+    // these are strings because they end up going to mysql
+    "locationAccuracy" : -1,
     "latitude": null,
     "longitude": null
 }; // results to send back
