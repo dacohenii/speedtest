@@ -183,19 +183,6 @@ function runuptests(target_size, last_test) {
         test_start = new Date();
     }
 
-    if (test_fail == true || test_up_results.length >= parseInt($("#maxUploadInterations").val(), 10) || target_size > parseInt($("#maxUploadSize").val(), 10) || (last_test !== null && last_test.Diff !== null && last_test.Diff > parseInt($("#maxUploadTime").val(), 10) * 1000)) {
-        var ttime = ((new Date()).getTime() - test_start.getTime());
-        $("#current").html("");
-        $("#result").append("<p>Finished upload tests in " + ttime / 1000 + "s</p>");
-
-       /** send results back to server **/ 
-       sendResults();
-
-        test_up_results = [];
-        test_fail = false;
-        return;
-    }
-
     if (test_up_results.length > 0) {
         var slowest, fastest, average = null;
 
@@ -209,6 +196,19 @@ function runuptests(target_size, last_test) {
         $("#stat_upload_slowest span").text(Math.round(slowest.MBps * 8 * 100) / 100 + "Mbps (" + slowest.TargetSize / 1024 / 1024 + "MB)");
         $("#stat_upload_fastest span").text(Math.round(fastest.MBps * 8 * 100) / 100 + "Mbps (" + fastest.TargetSize / 1024 / 1024 + "MB)");
         $("#stat_upload_average span").text(Math.round((average / test_up_results.length) * 8 * 100) / 100 + "Mbps");
+    }
+
+    if (test_fail == true || test_up_results.length >= parseInt($("#maxUploadInterations").val(), 10) || target_size > parseInt($("#maxUploadSize").val(), 10) || (last_test !== null && last_test.Diff !== null && last_test.Diff > parseInt($("#maxUploadTime").val(), 10) * 1000)) {
+        var ttime = ((new Date()).getTime() - test_start.getTime());
+        $("#current").html("");
+        $("#result").append("<p>Finished upload tests in " + ttime / 1000 + "s</p>");
+
+       /** send results back to server **/ 
+       sendResults();
+
+        test_up_results = [];
+        test_fail = false;
+        return;
     }
 
     if (upload_data.length > target_size) {
